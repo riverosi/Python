@@ -1,3 +1,18 @@
+
+
+#Configure buffers for serial
+""" Buffer serial tx size """
+BUFFER_SERIAL_TX_SIZE = 32
+""" Buffer serial rx size """
+BUFFER_SERIAL_RX_SIZE = 32
+#Configure serial data format
+""" Buffer serial format  22 [Byte] """
+BUFFER_SERIAL_FORMAT = '22B'
+
+#Configure baudrate
+BAUD_RATE = 460800
+
+
 import serial.tools.list_ports
 ports = serial.tools.list_ports.comports()
 
@@ -15,6 +30,10 @@ from struct import unpack
 import numpy as np
 
 def bytes_to_int(entrada):
+    """ Function to convert data array data in ints
+    Format data output:
+    [ax ay az temp gx gy gz mx my mz]
+     """
     arreglo = np.empty(10, dtype = int)
     #Accel Registers
     arreglo[0] = np.int16((entrada[0]<<8) | entrada[1])
@@ -42,16 +61,17 @@ def main():
 
     SerialPort = serial.Serial(serial_devices, baudrate=460800, timeout = None)
     #Buffer de entrada y de salida de 32bytes
-    SerialPort.set_buffer_size(rx_size = 32 , tx_size = 32) 
+    SerialPort.set_buffer_size(rx_size = BUFFER_SERIAL_RX_SIZE , tx_size = BUFFER_SERIAL_TX_SIZE) 
     array_out = np.empty([1,0], dtype=int)
 
     while True:
         try:
             line = SerialPort.read(size = 22)
             array_out = np.array([current_milli_time() - time_enlapsed], dtype=int) 
-            print( np.append( array_out , bytes_to_int(unpack('22B',line)) ) )
+            print( np.append( array_out , bytes_to_int(unpack(BUFFER_SERIAL_FORMAT,line)) ) )
             SerialPort.reset_input_buffer()
         except KeyboardInterrupt:
+            #Interrup serial data read whit keyboard interrupt crtl + c
             SerialPort.close()
             print("Keyboard Interrupt")
             break
