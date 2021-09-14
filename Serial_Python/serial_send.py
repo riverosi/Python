@@ -36,8 +36,8 @@ def list_serial_ports():
 def read_serial( serial_devices ):
     #load data from csv file
     wave_m_csv = np.genfromtxt('m_wave_2khz.csv',delimiter=',')
-    data_array = np.zeros(DATA_SIZE - len(wave_m))
-    wave_m_sixed =np.append(wave_m , data_array)
+    data_array = np.zeros(DATA_SIZE - len(wave_m_csv))
+    wave_m_sized =np.append(wave_m_csv , data_array)
 
     SerialPort = serial.Serial(serial_devices, baudrate=BAUD_RATE, timeout = None)
     #Buffer de entrada y de salida
@@ -46,23 +46,12 @@ def read_serial( serial_devices ):
 
     while True:
         try:
-            for element in wave_m_sixed:
-                print(pack('f' , element))
+            for element in wave_m_sized:
+                #uncomment for print data
+                #print(pack('f' , element))
                 SerialPort.write(pack('f' , element))
-            time.sleep(10.0)
-            # if dac_value < 1024:
-            #     SerialPort.write(dac_value.to_bytes(2,'big'))
-            #     #print(dac_value)
-            #     dac_value = dac_value + 32
-            #     time.sleep(0.001)
-            # else:
-            #     dac_value = 0
-            # dac_value = 1023
-            # SerialPort.write(dac_value.to_bytes(2,'big'))
-            # time.sleep(0.0001)
-            # dac_value = 0
-            # SerialPort.write(dac_value.to_bytes(2,'big'))
-            # time.sleep(0.0001)
+            time.sleep(1.0)
+            print("Data packet send...")   
         except KeyboardInterrupt:
             #Interrup serial data read whit keyboard interrupt crtl + c
             SerialPort.close()
@@ -74,8 +63,4 @@ def read_serial( serial_devices ):
 
 
 if __name__ == "__main__":
-    wave_m = np.genfromtxt('m_wave_2khz.csv',delimiter=',')
-    data_array = np.zeros(DATA_SIZE - len(wave_m))
-    np.append(wave_m , data_array)
-    print(np.append(wave_m , data_array))
     read_serial(list_serial_ports())
