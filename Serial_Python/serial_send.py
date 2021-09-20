@@ -36,9 +36,7 @@ def list_serial_ports():
 def read_serial( serial_devices ):
     #load data from csv file
     wave_m_csv = np.genfromtxt('m_wave_2khz.csv',delimiter=',')
-    data_array = np.zeros(DATA_SIZE - len(wave_m_csv))
-    wave_m_sized =np.append(wave_m_csv , data_array)
-
+    print(wave_m_csv)
     SerialPort = serial.Serial(serial_devices, baudrate=BAUD_RATE, timeout = None)
     #Buffer de entrada y de salida
     SerialPort.set_buffer_size(rx_size = BUFFER_SERIAL_RX_SIZE , tx_size = BUFFER_SERIAL_TX_SIZE)
@@ -46,11 +44,11 @@ def read_serial( serial_devices ):
 
     while True:
         try:
-            for element in wave_m_sized:
+            for element in wave_m_csv:
                 #uncomment for print data
                 #print(pack('f' , element))
                 SerialPort.write(pack('f' , element))
-            time.sleep(1.0)
+            time.sleep(10.0)
             print("Data packet send...")   
         except KeyboardInterrupt:
             #Interrup serial data read whit keyboard interrupt crtl + c
