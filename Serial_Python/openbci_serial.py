@@ -12,7 +12,7 @@ BUFFER_SERIAL_RX_SIZE = 512
 
 
 #Configure baudrate
-BAUD_RATE = 921600
+BAUD_RATE = 460800
 
 buffer_data = bytearray(33)
 
@@ -28,8 +28,8 @@ def list_serial_ports():
                 serial_devices = "{}".format(port)
         print(serial_devices)
     except (serial.SerialException , NameError):
-        serial_devices = ""
         print("Not found Serial Port")
+        sys.exit()
     return(serial_devices)
 
 #para convertir de complemento a2 a counts de datos para los 8 canales de eeg
@@ -53,10 +53,10 @@ def read_serial():
     SerialPort.set_buffer_size(rx_size = BUFFER_SERIAL_RX_SIZE , tx_size = BUFFER_SERIAL_TX_SIZE)
     print("App is runing!!!")
 
-    while '0xA0' == SerialPort.read():
-        buffer_data = SerialPort.read_until(terminator='0xc0' ,size= len(buffer_data)-1)
-        print(buffer_data)
-        print(array_convert(buffer_data))
-    
+    while True:
+        buffer_data = SerialPort.read_until(terminator='0xc0' ,size= 33)
+        print(len(buffer_data), array_convert(buffer_data))
+
+        
 if __name__ == "__main__":
     read_serial()
