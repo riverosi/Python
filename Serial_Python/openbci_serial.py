@@ -1,6 +1,8 @@
 import sys
 import serial
 import time
+import csv
+from datetime import date, datetime
 import struct
 import numpy as np
 
@@ -26,14 +28,15 @@ def list_serial_ports():
         for port, desc, hwid in sorted(ports):
             if("Serial" in desc):
                 serial_devices = "{}".format(port)
-        print(serial_devices)
     except (serial.SerialException , NameError):
         print("Not found Serial Port")
         sys.exit()
     return(serial_devices)
 
-#para convertir de complemento a2 a counts de datos para los 8 canales de eeg
 def array_convert(bytes_array):
+    """
+    para convertir de complemento a2 a counts de datos para los 8 canales de eeg
+    """
     counts_channel = []
     counts_channel.append(int.from_bytes(bytes_array[2:4], byteorder='big',signed=True))
     counts_channel.append(int.from_bytes(bytes_array[5:7], byteorder='big',signed=True))
@@ -45,27 +48,29 @@ def array_convert(bytes_array):
     counts_channel.append(int.from_bytes(bytes_array[23:25], byteorder='big',signed=True))
     return counts_channel
     
-
-def read_serial():
+def main():
     # Serial port obj
     SerialPort = serial.Serial(list_serial_ports(), baudrate=BAUD_RATE, timeout = None)
+    name_csv_file = "data-" + datetime.today().strftime('%Y-%m-%d-%H-%M') + ".csv"
+    if SerialPort.is_open:
+        file_csv = open(name_csv_file, 'a', newline='')
+        writer_csv = csv.writer(file_csv)
     #Buffer de entrada y de salida
     SerialPort.set_buffer_size(rx_size = BUFFER_SERIAL_RX_SIZE , tx_size = BUFFER_SERIAL_TX_SIZE)
     print("App is runing!!!")
+    SerialPort.reset_input_buffer()
 
     while True:
         try:
-            buffer_data = SerialPort.read_until(terminator=expected_footer)
+            buffer_data = SerialPort.read_until(terminator=expected_footer, size=33)
             if len(buffer_data) == 33:
-                print(array_convert(buffer_data))
-                #print(array_convert(struct.unpack('>33B', buffer_data)))
-            SerialPort.flush()
+                writer_csv.writerow(array_convert(buffer_data))
         except KeyboardInterrupt:
             #Interrup serial data read whit keyboard interrupt crtl + c
+            file_csv.close()
             SerialPort.close()
             print("Keyboard Interrupt")
             break
-
         
 if __name__ == "__main__":
-    read_serial()
+    main()
