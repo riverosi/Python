@@ -1,4 +1,6 @@
-from undaqTools import Daq
+import logging
+
+logging.info('ssdsdsd')
 
 
 
