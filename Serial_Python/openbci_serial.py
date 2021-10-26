@@ -1,20 +1,15 @@
 import serial
 import csv
 from datetime import date, datetime
-import numpy as np
 import serial.tools.list_ports
 
 class serial_reader():
-    #Configure buffers for serial
-    """ Buffer serial tx size """
     __BUFFER_SERIAL_TX_SIZE = 512
-    """ Buffer serial rx size """
     __BUFFER_SERIAL_RX_SIZE = 512
-    #Configure baudrate
     __BAUD_RATE = 460800
     __port_name = ""
     __expected_footer = bytes((0 , 0 , 0 , 0 , 0 , 0 , 192))
-    __name_csv_file = "data-" + datetime.today().strftime('%Y-%m-%d-%H-%M') + ".csv"
+    __name_csv_file = "data-" + datetime.today().strftime('%Y-%m-%d-%H%M') + ".csv"
 
     def list_serial_ports(self):
         try:
@@ -42,6 +37,7 @@ class serial_reader():
         return counts_channel
     
     def connect(self):
+        self.list_serial_ports()
         # Serial port obj
         self.SerialPort = serial.Serial(self.__port_name, baudrate=self.__BAUD_RATE, timeout = None)
         self.file_csv = open(self.__name_csv_file, 'a', newline='')
@@ -68,7 +64,6 @@ class serial_reader():
 biopot_serial = serial_reader()
 
 if __name__ == "__main__":
-    print(biopot_serial.list_serial_ports())
     biopot_serial.connect()
     while True:
         biopot_serial.read()
