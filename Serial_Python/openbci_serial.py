@@ -2,11 +2,14 @@ import serial
 import csv
 from datetime import date, datetime
 import serial.tools.list_ports
+import time
 
 class serial_reader():
     __BUFFER_SERIAL_TX_SIZE = 512
     __BUFFER_SERIAL_RX_SIZE = 1024
-    __BAUD_RATE = 460800
+    __BAUD_RATE = 960000 
+    #ojo a 921600 no funciona el poncho con los drivers de paco hay que ver como esta en el bioamp
+    #que ahi si funciona se aumento la velocidad del spi a 8M en esta prueba
     __port_name = ""
     __expected_footer = bytes((0 , 0 , 0 , 0 , 0 , 0 , 192))
     __name_csv_file = "data-" + datetime.today().strftime('%Y-%m-%d-%H%M') + ".csv"
@@ -56,7 +59,7 @@ class serial_reader():
     def read(self):
         try:
             buffer_data = self.SerialPort.read_until(terminator=self.__expected_footer, size=33)
-            if len(buffer_data) == 33:
+            if buffer_data[0] == 160:
                 self.writer_csv.writerow(self._array_convert(buffer_data))
         except KeyboardInterrupt:
             self.disconnect()
@@ -66,5 +69,8 @@ biopot_serial = serial_reader()
 
 if __name__ == "__main__":
     biopot_serial.connect()
-    while True:
-        biopot_serial.read()
+    tiempo_inicio = time.time()
+    for x in range(1, 2000, 1):
+        biopot_serial.read() 
+    tiempo_fin = time.time()
+    print('Frecuencia de muestreo: ' + str(2000/(tiempo_fin - tiempo_inicio)) + ' [Hz]')
